@@ -4,7 +4,7 @@ import React, { useEffect } from 'react'
 function page() {
     useEffect(()=>
     {
-        fetch('/api/auth/check_user').then(res =>
+        fetch('/api/profile/username').then(res =>
           {
               console.log(res);
           }
