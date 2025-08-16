@@ -28,7 +28,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!user || !user.email) return res.status(400).send("Something went wrong");
 
   const username = getUsernameFromEmail(user.email);
-  // make req to google to give details then store to db our user
   
   const userInfos = await fetch('https://www.googleapis.com/oauth2/v3/userinfo',
     {
@@ -43,7 +42,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         username,
         first_name: userInfos.given_name || '',
         last_name: userInfos.family_name || '',
-        image_url: userInfos.picture || '',
       },
       create:{
         username,
@@ -62,5 +60,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     `token=${jwtToken}; HttpOnly; Path=/; Max-Age=3600; SameSite=Lax`
   );
 
-  res.redirect('/room');
+  res.redirect(`/profile/${username}`);
 }
