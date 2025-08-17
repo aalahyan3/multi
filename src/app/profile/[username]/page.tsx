@@ -12,6 +12,7 @@ type UserData = {
   specific_color: string,
   image_url: string | null,
   bio: string | null
+  last_seen: Date
 }
 
 interface PageProps {
@@ -27,6 +28,23 @@ function isValidUrl(url: string) {
     return false;
   }
 }
+
+
+
+function timeAgo(lastSeen: string | Date): string {
+  const date = lastSeen instanceof Date ? lastSeen : new Date(lastSeen);
+  const diffMs = Date.now() - date.getTime();
+  const diffMin = Math.floor(diffMs / 1000 / 60);
+  const diffHours = Math.floor(diffMin / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffMin < 3) return "Online";
+  if (diffMin < 60) return `online ${diffMin} minutes ago`;
+  if (diffHours < 24) return `online ${diffHours} hours ago`;
+  return `${diffDays} online days ago`;
+}
+
+
 
 function parsePayload(data: Partial<UserData>) {
   if (!data.username) throw new Error("username is required");
@@ -59,11 +77,28 @@ function page({params}: PageProps) {
   const [selfProfile, setSelfProfile] = useState(false);
   const [profileEditNote, setProfileEditNote] = useState('');
   const [changeMadeOnEdit, setChangeMadeOnEdit] = useState(false);
+  const [isOnline, setIsOnline] = useState(false);
   
 
   const router = useRouter();
 
 
+
+  
+  useEffect(() => {
+    if (!userData?.last_seen) return;
+  
+    const date = new Date(userData.last_seen);
+    const diffMin = Math.floor((Date.now() - date.getTime()) / 1000 / 60);
+  
+    setIsOnline(diffMin < 3);
+  }, [userData?.last_seen]);
+  
+
+  useEffect(() => {
+    fetch("/api/last_seen", { method: "POST" }).catch(console.error);
+  }, []);
+  
   useEffect(() => {
     fetch(`/api/profile/${username}`)
       .then(res => res.json())
@@ -73,8 +108,6 @@ function page({params}: PageProps) {
         }
         setUserData(res.data && res.data.user);
         setSelfProfile(res.data &&  res.data.self_profile)
-        console.log(res);
-        
       })
   }, [username]);
 
@@ -303,8 +336,8 @@ function page({params}: PageProps) {
                   <div className="bg-white/5 rounded-xl p-4 border border-white/10">
                     <p className="text-slate-400 text-xs mb-1">Status</p>
                     <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                      <span className="text-white text-sm">Online</span>
+                    <div className={`w-2 h-2 rounded-full animate-pulse ${isOnline ? 'bg-green-400' : 'bg-red-400'}`} ></div>
+                      <span className="text-white text-sm">{timeAgo(userData.last_seen)}</span>
                     </div>
                   </div>
                 </div>

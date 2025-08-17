@@ -19,7 +19,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (!user) {
         return res.status(404).json(ApiRespBuilder(false, "user was not found", 404, null));
       }
-
+      console.log(user);
+      
       return res.status(200).json(ApiRespBuilder(true, "user fetched", 200, {self_profile:username === curr_user, user}));
     } catch (error) {
       return res.status(500).json(ApiRespBuilder(false, "internal server error test", 500, null));
