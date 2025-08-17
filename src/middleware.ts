@@ -2,11 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import {validateUser} from './middleware/validateUser'
 export async function middleware(req:NextRequest)
 {
-
-    console.log("middle ware called");
     
     const user = await validateUser(req);
-    console.log("user id", user);
+    // console.log("user id", user);
     if (!user)
         return NextResponse.redirect(new URL("/", req.url));
     const response =  NextResponse.next()
@@ -19,3 +17,4 @@ export const config = {
         '/((?!_next/static|_next/image|favicon.ico|$|api/auth/.*).*)',
     ],
 }
+

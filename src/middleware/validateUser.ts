@@ -11,7 +11,6 @@ async function validateUser(req:NextRequest)
     try{
         const secret = new TextEncoder().encode(process.env.JWT_SECRET)
         const {payload} = await jwtVerify(token, secret);
-        console.log(payload);
         
         if (!payload)
         {
