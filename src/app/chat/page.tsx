@@ -1,16 +1,16 @@
 'use client'
 import { error } from 'console';
 import { div } from 'framer-motion/client';
+import { useRouter } from 'next/navigation';
 import React , { useEffect, useState } from 'react'
 
-// Define the UserData type
+
 interface UserData {
   username: string;
   specific_color: string;
   image_url: string | null;
 }
 
-// --- Helper Component: SkeletonCard ---
 const SkeletonCard = () => {
   return (
     <div className="flex items-center p-4 rounded-xl bg-black/20 border border-white/10">
@@ -23,14 +23,26 @@ const SkeletonCard = () => {
   )
 }
 
-// --- Helper Component: UserCard ---
 interface UserCardProps {
   user: Partial<UserData>
 }
 
 const UserCard = ({ user }: UserCardProps) => {
-  const { username = '...', specific_color = '#888', image_url } = user
-  const getInitials = (name: string) => name.slice(0, 2).toUpperCase()
+  const router = useRouter();
+  const { username = '...', specific_color = '#888', image_url } = user;
+  const getInitials = (name: string) => name.slice(0, 2).toUpperCase();
+
+  const  startChat  = async () => {
+    const res = await fetch('/api/create_chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body:JSON.stringify({username})
+    }).then(res => res.json()).then( res =>
+      router.push(`/chat/${res.data.id}`)
+    );
+  };
 
   return (
     <div
@@ -38,58 +50,49 @@ const UserCard = ({ user }: UserCardProps) => {
                  transition-all duration-300 ease-in-out
                  hover:bg-white/20 hover:border-white/20 hover:-translate-y-1"
     >
-      {/* Background link for the entire card */}
-      <a href="#" className="absolute inset-0 z-0 rounded-xl" aria-label={`View details for ${username}`}></a>
-
-      {/* Content container, sits on top of the background link */}
-      <div className="relative z-10 flex items-center w-full">
-        <div className="flex-shrink-0 mr-4">
+      <div className="relative flex items-center w-full gap-4">
+        <div className="flex-shrink-0">
           {image_url ? (
             <img
               src={image_url}
               alt={username}
               className="w-14 h-14 rounded-full object-cover ring-2 ring-white/20 transition-all duration-300"
-              style={{borderColor: specific_color}}
+              style={{ borderColor: specific_color }}
             />
           ) : (
             <div
               className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-xl 
-                         ring-2 ring-white/20 group-hover:ring-current transition-all duration-300"
-              style={{ 
-                backgroundColor: specific_color,
-                color: specific_color,
-              }}
+                         ring-2 ring-white/20 transition-all duration-300"
+              style={{ backgroundColor: specific_color }}
             >
-              <span className="text-white">{getInitials(username)}</span>
+              {getInitials(username)}
             </div>
           )}
         </div>
-        <div className="flex-1">
+
+        <div className="flex-1 flex flex-col justify-center">
           <h3 className="font-bold text-lg text-gray-100 group-hover:text-white transition-colors duration-300">
             {username}
           </h3>
-          {/* Specific link for "View Profile" */}
           <a
             href={`/profile/${username}`}
-            onClick={(e) => e.stopPropagation()} // Prevents the background link from firing
-            className="relative z-20 text-sm text-gray-400 group-hover:text-indigo-300 transition-colors duration-300 hover:underline"
+            onClick={(e) => e.stopPropagation()}
+            className="text-sm text-gray-400 w-max group-hover:text-indigo-300 hover:underline transition-colors duration-300"
           >
             View Profile
           </a>
         </div>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-6 w-6 text-gray-500 group-hover:text-white transition-all duration-300 group-hover:translate-x-1"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
+
+        <button
+          onClick={startChat}
+          className="px-4 py-2 bg-pink-600 cursor-pointer hover:bg-violet-500 rounded-lg text-white font-semibold shadow-md transition-colors duration-500"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
+          Start Chat
+        </button>
       </div>
     </div>
-  )
-}
+  );
+};
 
 
 
