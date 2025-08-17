@@ -1,18 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { match } from "assert";
-
+import {validateUser} from './middleware/validateUser'
 export async function middleware(req:NextRequest)
 {
 
     console.log("middle ware called");
     
-    // await updateLastSeen(req).catch(console.error); 
-
-    return NextResponse.next();
+    const user = await validateUser(req);
+    console.log("user id", user);
+    if (!user)
+        return NextResponse.redirect(new URL("/", req.url));
+    const response =  NextResponse.next()
+      response.cookies.set('username', user as string, {'path': '/'});
+      return response;
 }
 
 export const config = {
     matcher: [
-        '/((?!_next/static|_next/image|favicon.ico).*)' 
-    ]
+        '/((?!_next/static|_next/image|favicon.ico|$|api/auth/.*).*)',
+    ],
 }

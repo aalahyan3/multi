@@ -3,17 +3,17 @@ import React, { use, useEffect, useState } from 'react'
 import { FcEditImage } from 'react-icons/fc';
 import {FaEdit, FaTimes, FaSave} from 'react-icons/fa'
 import { useRouter } from 'next/navigation';
-
-type UserData = {
-  username: string,
-  email: string,
-  first_name: string,
-  last_name: string,
-  specific_color: string,
-  image_url: string | null,
-  bio: string | null
-  last_seen: Date
-}
+import { UserData } from '../../types/UserType';
+// type UserData = {
+//   username: string,
+//   email: string,
+//   first_name: string,
+//   last_name: string,
+//   specific_color: string,
+//   image_url: string | null,
+//   bio: string | null
+//   last_seen: Date
+// }
 
 interface PageProps {
   params: Promise<{ username: string }>;
@@ -39,9 +39,9 @@ function timeAgo(lastSeen: string | Date): string {
   const diffDays = Math.floor(diffHours / 24);
 
   if (diffMin < 3) return "Online";
-  if (diffMin < 60) return `online ${diffMin} minutes ago`;
-  if (diffHours < 24) return `online ${diffHours} hours ago`;
-  return `${diffDays} online days ago`;
+  if (diffMin < 60) return ` ${diffMin} minutes ago`;
+  if (diffHours < 24) return ` ${diffHours} hours ago`;
+  return `${diffDays} days ago`;
 }
 
 
@@ -129,7 +129,6 @@ function page({params}: PageProps) {
     setIsLoading(true);
     try {
       parsePayload(editData);
-      await new Promise(resolve => setTimeout(resolve, 2000));
       const response = await fetch(`/api/profile/${username}`, {
         method: 'PUT',
         headers: {
@@ -256,9 +255,9 @@ function page({params}: PageProps) {
             {selfProfile &&  (<div className="absolute top-4 right-4">
               <button
                 onClick={handleEditClick}
-                className="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors border border-white/20"
+                className="p-2 cursor-pointer bg-white/10 hover:bg-white/20 rounded-xl text-center transition-colors border border-white/20"
               >
-                <FaEdit className="w-4 h-4 text-white" />
+                <FaEdit className="w-4 h-4 text-white mx-auto" />
               </button>
             </div>)}
 
@@ -334,7 +333,7 @@ function page({params}: PageProps) {
                   </div>
                   
                   <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                    <p className="text-slate-400 text-xs mb-1">Status</p>
+                    <p className="text-slate-400 text-xs mb-1">Last Seen</p>
                     <div className="flex items-center space-x-2">
                     <div className={`w-2 h-2 rounded-full animate-pulse ${isOnline ? 'bg-green-400' : 'bg-red-400'}`} ></div>
                       <span className="text-white text-sm">{timeAgo(userData.last_seen)}</span>

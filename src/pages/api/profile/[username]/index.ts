@@ -14,7 +14,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const user = await prisma.user.findUnique({
         where: { username: username as string },
       });
-      await new Promise(resolve => setTimeout(resolve, 2000));
 
       if (!user) {
         return res.status(404).json(ApiRespBuilder(false, "user was not found", 404, null));

@@ -53,7 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       })
     }
 
-  const jwtToken = jwt.sign({ id:user_touched.id }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
+  const jwtToken = jwt.sign({ id:user_touched.id, username:user_touched.username }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
 
   res.setHeader(
     'Set-Cookie',
