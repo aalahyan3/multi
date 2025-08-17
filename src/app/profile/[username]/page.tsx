@@ -2,6 +2,7 @@
 import React, { use, useEffect, useState } from 'react'
 import { FcEditImage } from 'react-icons/fc';
 import {FaEdit, FaTimes, FaSave} from 'react-icons/fa'
+import { useRouter } from 'next/navigation';
 
 type UserData = {
   username: string,
@@ -57,6 +58,12 @@ function page({params}: PageProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [selfProfile, setSelfProfile] = useState(false);
   const [profileEditNote, setProfileEditNote] = useState('');
+  const [changeMadeOnEdit, setChangeMadeOnEdit] = useState(false);
+  
+
+  const router = useRouter();
+
+
   useEffect(() => {
     fetch(`/api/profile/${username}`)
       .then(res => res.json())
@@ -89,12 +96,14 @@ function page({params}: PageProps) {
     setIsLoading(true);
     try {
       parsePayload(editData);
+      await new Promise(resolve => setTimeout(resolve, 2000));
       const response = await fetch(`/api/profile/${username}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(editData)
+        
       });
       
       const result = await response.json();
@@ -102,6 +111,10 @@ function page({params}: PageProps) {
       if (result.success) {
         setUserData(prev => prev ? {...prev, ...editData} : null);
         setShowEditModal(false);
+        setError(null);
+        setChangeMadeOnEdit(false);
+        // window.location.href = `/profile/${editData.username}`; //refresh page 
+        router.push(`/profile/${editData.username}`); // smooth 
       } else {
         setError(result.message);
       }
@@ -113,35 +126,97 @@ function page({params}: PageProps) {
   };
 
   const handleInputChange = (field: keyof UserData, value: string) => {
-    setEditData(prev => ({
-      ...prev,
+    const newEditData = {
+      ...editData,
       [field]: value
-    }));
-  };
-
-  if (error)
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-        <div className="bg-red-500/20 border border-red-500/50 rounded-xl p-6 text-red-200">
-          {error}
-        </div>
-      </div>
+    };
+    
+    setEditData(newEditData);
+    
+    setChangeMadeOnEdit(
+      !!userData && (
+        userData.bio !== newEditData.bio ||
+        userData.username !== newEditData.username ||
+        userData.first_name !== newEditData.first_name ||
+        userData.last_name !== newEditData.last_name ||
+        userData.image_url !== newEditData.image_url ||
+        userData.specific_color !== newEditData.specific_color
+      )
     );
+  };
 
   if (!userData)
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
+      <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 flex items-center justify-center p-4 flex-col gap-4">
+        {error && (
+        <div className="z-50 bg-red-500/20 backdrop-blur-xl border border-red-400/30 rounded-2xl p-4 text-red-200 shadow-2xl animate-slide-in max-w-sm">
+          <div className="flex items-start space-x-3">
+            <div className="w-5 h-5 bg-red-400 rounded-full flex-shrink-0 mt-0.5"></div>
+            <div className="text-sm">{error}</div>
+          </div>
+        </div>
+      )}
+        <div className="relative max-w-sm w-full">
+          <div className="absolute inset-0 rounded-3xl blur-xl opacity-30 bg-slate-500"></div>
+          
+          <div className="relative bg-slate-800/90 backdrop-blur-xl rounded-3xl p-8 border border-white/10 shadow-2xl">
+            <div className="flex flex-col items-center text-center mb-8">
+              <div className="relative mb-6">
+                <div className="w-24 h-24 rounded-2xl bg-white/10 animate-pulse shadow-xl border-2 border-white/20"></div>
+              </div>
+              
+              <div className="h-8 w-48 bg-white/10 rounded-xl animate-pulse mb-2"></div>
+              
+              <div className="flex items-center space-x-2 mb-4">
+                <div className="h-5 w-20 bg-white/10 rounded-lg animate-pulse"></div>
+              </div>
+              
+              <div className="bg-white/5 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/10 mb-6 w-full">
+                <div className="h-4 w-40 bg-white/10 rounded animate-pulse mx-auto"></div>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <div className="flex items-center mb-3">
+                <div className="w-1 h-4 bg-white/20 rounded-full mr-3 animate-pulse"></div>
+                <div className="h-5 w-12 bg-white/10 rounded animate-pulse"></div>
+              </div>
+              <div className="pl-4 space-y-2">
+                <div className="h-4 w-full bg-white/10 rounded animate-pulse"></div>
+                <div className="h-4 w-3/4 bg-white/10 rounded animate-pulse"></div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                <div className="h-3 w-16 bg-white/10 rounded animate-pulse mb-2"></div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 bg-white/20 rounded-full animate-pulse"></div>
+                  <div className="h-4 w-12 bg-white/10 rounded animate-pulse"></div>
+                </div>
+              </div>
+              
+              <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                <div className="h-3 w-10 bg-white/10 rounded animate-pulse mb-2"></div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-white/20 rounded-full animate-pulse"></div>
+                  <div className="h-4 w-12 bg-white/10 rounded animate-pulse"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
       </div>
     );
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 flex items-center justify-center p-4">
         <div className="relative max-w-sm w-full">
           <div 
             className="absolute inset-0 rounded-3xl blur-xl opacity-30"
-            style={{ backgroundColor: userData.specific_color }}
+            style={{ backgroundColor: userData?.specific_color }}
           ></div>
           
            <div className="relative bg-slate-800/90 backdrop-blur-xl rounded-3xl p-8 border border-white/10 shadow-2xl">
@@ -154,83 +229,94 @@ function page({params}: PageProps) {
               </button>
             </div>)}
 
-            <div className="flex flex-col items-center text-center mb-8">
-              <div className="relative mb-6">
-                {userData.image_url ? (
-                  <img 
-                    src={userData.image_url}
-                    alt={userData.first_name}
-                    className="w-24 h-24 rounded-2xl object-cover shadow-xl border-2"
-                    style={{ borderColor: userData.specific_color }}
-                  />
-                ) : (
-                  <div 
-                    className="w-24 h-24 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-xl border-2"
-                    style={{ backgroundColor: userData.specific_color, borderColor: userData.specific_color }}
-                  >
-                    {userData.first_name.charAt(0)}{userData.last_name.charAt(0)}
+            {userData ? (
+              <>
+                <div className="flex flex-col items-center text-center mb-8">
+                  <div className="relative mb-6">
+                    {userData.image_url ? (
+                      <img 
+                        src={userData.image_url}
+                        alt={userData.first_name}
+                        className="w-24 h-24 rounded-2xl object-cover shadow-xl border-2"
+                        style={{ borderColor: userData.specific_color }}
+                      />
+                    ) : (
+                      <div 
+                        className="w-24 h-24 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-xl border-2"
+                        style={{ backgroundColor: userData.specific_color, borderColor: userData.specific_color }}
+                      >
+                        {userData.first_name.charAt(0)}{userData.last_name.charAt(0)}
+                      </div>
+                    )}
+                    <div 
+                      className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-3 border-slate-800"
+                      style={{ backgroundColor: userData.specific_color }}
+                    ></div>
+                  </div>
+                  
+                  <h1 className="text-2xl font-bold text-white mb-2">
+                    {userData.first_name} {userData.last_name}
+                  </h1>
+                  
+                  <div className="flex items-center space-x-2 mb-4">
+                    <span className="text-slate-300">@{userData.username}</span>
+                    <div 
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: userData.specific_color }}
+                    ></div>
+                  </div>
+                  
+                  <div className="bg-white/5 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/10 mb-6">
+                    <p className="text-slate-300 text-sm">{userData.email}</p>
+                  </div>
+                </div>
+
+                {userData.bio && (
+                  <div className="mb-6 ">
+                    <div className="flex items-center mb-3">
+                      <div 
+                        className="w-1 h-4 rounded-full mr-3"
+                        style={{ backgroundColor: userData.specific_color }}
+                      ></div>
+                      <h3 className="text-white font-medium">About</h3>
+                    </div>
+                    <p className="text-slate-300 text-sm leading-relaxed break-words pl-4 ">
+                      {userData.bio}
+                    </p>
                   </div>
                 )}
-                <div 
-                  className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-3 border-slate-800"
-                  style={{ backgroundColor: userData.specific_color }}
-                ></div>
-              </div>
-              
-              <h1 className="text-2xl font-bold text-white mb-2">
-                {userData.first_name} {userData.last_name}
-              </h1>
-              
-              <div className="flex items-center space-x-2 mb-4">
-                <span className="text-slate-300">@{userData.username}</span>
-                <div 
-                  className="w-2 h-2 rounded-full"
-                  style={{ backgroundColor: userData.specific_color }}
-                ></div>
-              </div>
-              
-              <div className="bg-white/5 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/10 mb-6">
-                <p className="text-slate-300 text-sm">{userData.email}</p>
-              </div>
-            </div>
 
-            {userData.bio && (
-              <div className="mb-6 ">
-                <div className="flex items-center mb-3">
-                  <div 
-                    className="w-1 h-4 rounded-full mr-3"
-                    style={{ backgroundColor: userData.specific_color }}
-                  ></div>
-                  <h3 className="text-white font-medium">About</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                    <p className="text-slate-400 text-xs mb-1">Theme Color</p>
+                    <div className="flex items-center space-x-2">
+                      <div 
+                        className="w-4 h-4 rounded-full"
+                        style={{ backgroundColor: userData.specific_color }}
+                      ></div>
+                      <span className="text-white text-sm font-mono">
+                        {userData.specific_color}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                    <p className="text-slate-400 text-xs mb-1">Status</p>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                      <span className="text-white text-sm">Online</span>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-slate-300 text-sm leading-relaxed break-words pl-4 ">
-                  {userData.bio}
-                </p>
+              </>
+            ) : (
+              <div className="flex flex-col items-center">
+                <div className="w-16 h-16 border-4 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin mb-6"></div>
+                <div className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 text-xl font-semibold animate-pulse">
+                  Loading your profile...
+                </div>
               </div>
             )}
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                <p className="text-slate-400 text-xs mb-1">Theme Color</p>
-                <div className="flex items-center space-x-2">
-                  <div 
-                    className="w-4 h-4 rounded-full"
-                    style={{ backgroundColor: userData.specific_color }}
-                  ></div>
-                  <span className="text-white text-sm font-mono">
-                    {userData.specific_color}
-                  </span>
-                </div>
-              </div>
-              
-              <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                <p className="text-slate-400 text-xs mb-1">Status</p>
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                  <span className="text-white text-sm">Online</span>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -248,7 +334,7 @@ function page({params}: PageProps) {
               </button>
             </div>
             
-            {profileEditNote &&  (<div className="bg-red-500/20 border border-red-500/50 rounded-xl p-2 text-red-200">
+            {profileEditNote &&  (<div className="bg-red-500/20 border border-red-500/50 rounded-xl p-4 text-red-200">
               {profileEditNote}
             </div>)}
 
@@ -335,11 +421,11 @@ function page({params}: PageProps) {
               </button>
               <button
                 onClick={handleSave}
-                disabled={isLoading}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white py-3 px-4 rounded-xl transition-colors flex items-center justify-center space-x-2"
+                disabled={isLoading || !changeMadeOnEdit}
+                className="flex-1 bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 disabled:from-gray-500 disabled:to-gray-600 text-white py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 cursor-pointer shadow-lg"
               >
                 {isLoading ? (
-                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                 ) : (
                   <>
                     <FaSave className="w-4 h-4" />
@@ -351,6 +437,56 @@ function page({params}: PageProps) {
           </div>
         </div>
       )}
+
+      {error && (
+        <div className="fixed top-4 right-4 z-50 bg-red-500/20 backdrop-blur-xl border border-red-400/30 rounded-2xl p-4 text-red-200 shadow-2xl animate-slide-in max-w-sm">
+          <div className="flex items-start space-x-3">
+            <div className="w-5 h-5 bg-red-400 rounded-full flex-shrink-0 mt-0.5"></div>
+            <div className="text-sm">{error}</div>
+          </div>
+        </div>
+      )}
+
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-20px); }
+        }
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes slide-in {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .animate-float {
+          animation: float var(--duration, 4s) ease-in-out infinite;
+        }
+        .animate-spin-slow {
+          animation: spin-slow 20s linear infinite;
+        }
+        .animate-slide-in {
+          animation: slide-in 0.5s ease-out;
+        }
+        
+        .particle-0 { left: 10%; top: 20%; animation-delay: 0s; animation-duration: 4s; }
+        .particle-1 { left: 80%; top: 10%; animation-delay: 0.5s; animation-duration: 5s; }
+        .particle-2 { left: 30%; top: 70%; animation-delay: 1s; animation-duration: 3.5s; }
+        .particle-3 { left: 90%; top: 60%; animation-delay: 1.5s; animation-duration: 4.5s; }
+        .particle-4 { left: 15%; top: 40%; animation-delay: 2s; animation-duration: 6s; }
+        .particle-5 { left: 70%; top: 80%; animation-delay: 0.2s; animation-duration: 3.8s; }
+        .particle-6 { left: 50%; top: 15%; animation-delay: 1.2s; animation-duration: 4.2s; }
+        .particle-7 { left: 25%; top: 90%; animation-delay: 0.8s; animation-duration: 5.2s; }
+        .particle-8 { left: 85%; top: 35%; animation-delay: 2.5s; animation-duration: 3.2s; }
+        .particle-9 { left: 40%; top: 50%; animation-delay: 0.3s; animation-duration: 4.8s; }
+        .particle-10 { left: 60%; top: 25%; animation-delay: 1.8s; animation-duration: 5.5s; }
+        .particle-11 { left: 20%; top: 65%; animation-delay: 0.7s; animation-duration: 3.3s; }
+        .particle-12 { left: 75%; top: 45%; animation-delay: 2.2s; animation-duration: 4.7s; }
+        .particle-13 { left: 35%; top: 85%; animation-delay: 1.3s; animation-duration: 6.2s; }
+        .particle-14 { left: 95%; top: 75%; animation-delay: 0.9s; animation-duration: 3.9s; }
+      `}</style>
     </>
   );
 }

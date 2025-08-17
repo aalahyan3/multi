@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import jwt from 'jsonwebtoken';
 import { prisma } from "../../../../../lib/prisma";
+import { use } from "react";
 
 function getUsernameFromEmail(email: string) {
   return email.slice(0, email.indexOf('@'));
@@ -27,38 +28,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const user = jwt.decode(tokens.id_token as string) as { email?: string } | null;
   if (!user || !user.email) return res.status(400).send("Something went wrong");
 
-  const username = getUsernameFromEmail(user.email);
   
   const userInfos = await fetch('https://www.googleapis.com/oauth2/v3/userinfo',
-    {
-        headers:{Authorization: `Bearer ${tokens.access_token}`}
-    }
+  {
+    headers:{Authorization: `Bearer ${tokens.access_token}`}
+  }
   ).then(res => res.json());
 
-  await prisma.user.upsert(
-    {
-      where: {email:userInfos.email},
-      update:{
-        username,
-        first_name: userInfos.given_name || '',
-        last_name: userInfos.family_name || '',
-      },
-      create:{
-        username,
-        email:userInfos.email,
-        first_name: userInfos.given_name || '',
-        last_name: userInfos.family_name || '',
-        image_url: userInfos.picture || '',
-      }
-    }
+  let user_touched = await prisma.user.findUnique(
+    {where :{
+      email:userInfos.email
+    }}
   )
+  if (!user_touched)
+    {
+      user_touched = await prisma.user.create({
+        data: {
+          username: getUsernameFromEmail(user.email),
+          email: userInfos.email,
+          first_name: userInfos.given_name || '',
+          last_name: userInfos.family_name || '',
+          image_url:userInfos.picture || ''
+        }
+      })
+    }
 
-  const jwtToken = jwt.sign({ username }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
+  const jwtToken = jwt.sign({ id:user_touched.id }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
 
   res.setHeader(
     'Set-Cookie',
     `token=${jwtToken}; HttpOnly; Path=/; Max-Age=3600; SameSite=Lax`
   );
 
-  res.redirect(`/profile/${username}`);
+  res.redirect(`/profile/${user_touched.username}`);
 }

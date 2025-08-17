@@ -24,4 +24,5 @@ model User {
   createdAt DateTime @default(now())
   bio String?
   specific_color String @default("#494bd6")
+  last_seen DateTime @default(now())
 }

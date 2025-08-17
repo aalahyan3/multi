@@ -14,6 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const user = await prisma.user.findUnique({
         where: { username: username as string },
       });
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       if (!user) {
         return res.status(404).json(ApiRespBuilder(false, "user was not found", 404, null));
@@ -26,8 +27,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
   else if (req.method === 'PUT') {
     try {
-      const { username: newUsername, first_name, last_name, specic_color, image_url, bio } = req.body;
+      const { username: newUsername, first_name, last_name, specific_color, image_url, bio } = req.body;
 
+      console.log(username, specific_color);
+      
       if (username !== curr_user)
         return res.status(401).json(ApiRespBuilder(false, "this is not u", 400, null))
       if (!newUsername || !first_name || !last_name) {
@@ -53,7 +56,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       const colorRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
-      if (specic_color && !colorRegex.test(specic_color)) {
+      if (specific_color && !colorRegex.test(specific_color)) {
         return res.status(400).json(ApiRespBuilder(false, "invalid color format", 400, null));
       }
 
@@ -71,7 +74,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         last_name,
       };
 
-      if (specic_color) updateData.specic_color = specic_color;
+      if (specific_color) updateData.specific_color = specific_color;
       if (image_url) updateData.image_url = image_url.trim() === '' ? null : image_url;
       if (bio) updateData.bio = bio.trim() === '' ? null : bio;
 
@@ -79,7 +82,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         where: { username: username as string },
         data: updateData,
       });
-
       return res.status(200).json(ApiRespBuilder(true, "profile updated successfully", 200, updatedUser));
     } catch (error: any) {
       if (error.code === 'P2002') {
