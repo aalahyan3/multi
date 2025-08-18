@@ -78,6 +78,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const chat = await insertInto(curr_user, id as string, messageContent as string, parseInt(id as string));
     if (!chat)
         return res.status(401).json(ApiRespBuilder(false, "this chat doesn't belong to you", 405, null));
-    return res.status(401).json(ApiRespBuilder(true, "chat fetched", 200, chat));
+    return res.status(200).json(ApiRespBuilder(true, "chat fetched", 200, chat));
 
 }

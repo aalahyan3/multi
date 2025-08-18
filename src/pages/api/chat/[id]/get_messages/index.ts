@@ -65,7 +65,6 @@ async function  userIsInChat(username : string, chatId : string, before: Date, l
             },
           });
 
-        console.log(JSON.stringify(res, null, 2));
         if (!res) return null;
 
         if (res.members.find(member => member.userId === user.id)) return res;
@@ -91,7 +90,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const chat = await userIsInChat(curr_user, id as string, beforeDate, FetchLimit);
     if (!chat)
-        return res.status(401).json(ApiRespBuilder(false, "this chat doesn't belong to you", 405, null));
-    return res.status(401).json(ApiRespBuilder(true, "chat fetched", 200, chat));
+        return res.status(401).json(ApiRespBuilder(false, "You are not a member of this chat", 401, null));
+    return res.status(200).json(ApiRespBuilder(true, "chat fetched", 200, chat));
 
 }

@@ -8,21 +8,21 @@ const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
-const rooms = []; // [{roomid: "xx", users : ["user1, user2"]}]
+const chats = []; // [{roomid: "xx", users : ["user1, user2"]}]
 const userSockets = new Map();
 
-function findRoom(roomId) {
-  return rooms.find(room => room.room_id === roomId);
+function findChat(id) {
+  return chats.find(c => c.chatId === id);
 }
 
-function removeUserFromRoom(username, roomId) {
-  const room = findRoom(roomId);
-  if (room) {
-    room.users = room.users.filter(user => user !== username);
-    if (room.users.length === 0) {
-      const roomIndex = rooms.findIndex(r => r.room_id === roomId);
+function removeUserFromRoom(username, chatId) {
+  const chat = findChat(chatId);
+  if (chat) {
+    chat.users = chat.users.filter(user => user !== username);
+    if (chat.users.length === 0) {
+      const roomIndex = chats.findIndex(r => r.chatId === chatId);
       if (roomIndex !== -1) {
-        rooms.splice(roomIndex, 1);
+        chats.splice(roomIndex, 1);
       }
     }
   }
@@ -36,48 +36,50 @@ app.prepare().then(() => {
   io.on("connection", (socket) => {
     console.log("User connected:", socket.id);
 
-    socket.on("join-room", ({ room_id, username }) => {
-      console.log("joining", username, "to room", room_id);
+    socket.on("join-chat", ({ chatId, username }) => {
+      console.log("joining", username, "to chat", chatId);
       
-      let room = findRoom(room_id);
-      if (!room) {
-        room = { room_id, users: [] };
-        rooms.push(room);
+      let chat = findChat(chatId);
+      if (!chat) {
+        chat = { chatId, users: [] };
+        chats.push(chat);
       }
 
-      if (!room.users.includes(username)) {
-        room.users.push(username);
+      if (!chat.users.includes(username)) {
+        chat.users.push(username);
       }
 
-      socket.join(room_id);
+      socket.join(chatId);
 
       socket.username = username;
-      socket.room_id = room_id;
+      socket.chatId = chatId
 
       userSockets.set(username, socket.id);
-
-      socket.to(room_id).emit("log", `${username} joined the room`);
-      socket.emit("log", "You have joined this room");
+      console.log(username , "joinded", chatId);
+      socket.to(chatId).emit("log", `${username} joined the chat`);
+      socket.emit("log", "You have joined this chat");
       
-      console.log(`Room ${room_id} now has users:`, room.users);
+      console.log(`Room ${chatId} now has users:`, chat.users);
     });
 
-    socket.on("message", ({ room_id, username, message }) => {
-      let room = findRoom(room_id);
-      if (!room_id || !room) return;
-      socket.to(room_id).emit("message", { username, message });
-      socket.emit("message", { username, message });
-      console.log(`Sent message ${message} from ${username} in room ${room_id}`);
+    socket.on("message", ({ chatId, username, message }) => {
+      let chat = findChat(chatId);
+      console.log(chatId, username, message);
+      
+      if (!chatId || !chat) return;
+      
+      io.to(chatId).emit("message", { chatId, username, message });
+      console.log(`Sent message ${message} from ${username} in room ${chatId}`);
     });
 
     socket.on("disconnect", () => {
       console.log("User disconnected:", socket.id);
 
-      if (socket.username && socket.room_id) {
-        removeUserFromRoom(socket.username, socket.room_id);
+      if (socket.username && socket.chatId) {
+        removeUserFromRoom(socket.username, socket.chatId);
         userSockets.delete(socket.username);
-        socket.to(socket.room_id).emit("log", `${socket.username} left the room`);
-        console.log(`Removed ${socket.username} from room ${socket.room_id}`);
+        socket.to(socket.chatId).emit("log", `${socket.username} left the room`);
+        console.log(`Removed ${socket.username} from room ${socket.chatId}`);
       }
     });
   });
