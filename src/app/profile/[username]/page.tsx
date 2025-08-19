@@ -4,6 +4,8 @@ import { FcEditImage } from 'react-icons/fc';
 import {FaEdit, FaTimes, FaSave} from 'react-icons/fa'
 import { useRouter } from 'next/navigation';
 import { UserData } from '../../types/UserType';
+import Header from '@/components/Header'
+import Head from 'next/head';
 // type UserData = {
 //   username: string,
 //   email: string,
@@ -243,8 +245,9 @@ function page({params}: PageProps) {
     );
 
   return (
-    <>
-      <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 flex items-center justify-center p-4">
+    <div className=' min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 '>
+      <Header />
+      <div className="flex items-center justify-center p-4">
         <div className="relative max-w-sm w-full">
           <div 
             className="absolute inset-0 rounded-3xl blur-xl opacity-30"
@@ -519,7 +522,7 @@ function page({params}: PageProps) {
         .particle-13 { left: 35%; top: 85%; animation-delay: 1.3s; animation-duration: 6.2s; }
         .particle-14 { left: 95%; top: 75%; animation-delay: 0.9s; animation-duration: 3.9s; }
       `}</style>
-    </>
+    </div>
   );
 }
 
