@@ -1,12 +1,25 @@
 'use client'
 import Link from 'next/link'
-import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import React, { useEffect, useState } from 'react'
 import { FcGoogle } from 'react-icons/fc'
 
 function page() {
   const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
 
 
+  useEffect(()=>
+  {
+    fetch('/api/auth/check_user', {method: 'GET'}).then(res => res.json()).then(
+      res => {
+        console.log(res);
+        
+          if (res.success)
+            router.push("/home");
+      }
+    )
+  })
   // this is coulde generated code , it's my front end developper, my focus on backend
   const handleGoogleAuth = (e) => {
     setIsLoading(true)
