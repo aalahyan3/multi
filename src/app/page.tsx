@@ -20,8 +20,7 @@ function page() {
       }
     )
   })
-  // this is coulde generated code , it's my front end developper, my focus on backend
-  const handleGoogleAuth = (e) => {
+  const handleGoogleAuth = (e:any) => {
     setIsLoading(true)
     // The navigation will happen automatically via href
   }
