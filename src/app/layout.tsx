@@ -28,6 +28,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        <p className="absolute bg-black text-white w-screen text-center font-mono text-xs z-40 bottom-0" >Your attention: most of front end code is Ai generated - i was focusing on backend</p>
       </body>
     </html>
   );

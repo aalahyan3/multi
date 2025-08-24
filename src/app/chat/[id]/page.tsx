@@ -522,7 +522,7 @@ function page({ params }: { params: Promise<{ id: string }> }) {
           <div className="backdrop-blur-xl bg-black/40 border-b border-purple-500/30 shadow-2xl flex-shrink-0">
             <div className="p-4">
               <div className="flex items-center space-x-4">
-                <button className="lg:hidden p-2 rounded-full bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 transition-colors">
+                <button onClick={(e)=>{window.location.href = "/chat"}} className="p-2 cursor-pointer rounded-full bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 transition-colors">
                   <ArrowLeft className="w-5 h-5" />
                 </button>
                 
@@ -555,7 +555,7 @@ function page({ params }: { params: Promise<{ id: string }> }) {
                   </p>
                 </div>
                 
-                <button className="p-2 rounded-full bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 transition-colors flex-shrink-0">
+                <button disabled className="p-2 rounded-full bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 cursor-not-allowed transition-colors flex-shrink-0">
                   <MoreVertical className="w-5 h-5" />
                 </button>
               </div>

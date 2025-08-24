@@ -16,7 +16,7 @@ function page() {
         console.log(res);
         
           if (res.success)
-            router.push("/home");
+            router.push("/chat");
       }
     )
   })

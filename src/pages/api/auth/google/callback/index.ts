@@ -60,5 +60,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     `token=${jwtToken}; HttpOnly; Path=/; Max-Age=3600; SameSite=Lax`
   );
 
-  res.redirect(`/profile/${user_touched.username}`);
+  res.redirect(`/chat`);
 }
