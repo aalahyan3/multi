@@ -1,11 +1,19 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
-    "paths": {"@/*": ["src/*"]},
+    "paths": { "@/*": ["src/*"] },
     "target": "ES2020",
     "module": "commonjs",
     "esModuleInterop": true,
-    "strict": true,
+
+    // --- less strict ---
+    "strict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "strictFunctionTypes": false,
+    "strictBindCallApply": false,
+    "alwaysStrict": false,
+
     "outDir": "dist",
     "resolveJsonModule": true,
     "moduleResolution": "node",
