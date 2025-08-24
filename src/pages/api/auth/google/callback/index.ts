@@ -19,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       client_secret: process.env.GOOGLE_CLIENT_SECRET as string,
       code: code as string,
       grant_type: 'authorization_code',
-      redirect_uri: 'http://localhost:3000/api/auth/google/callback',
+      redirect_uri: 'https://multichat.up.railway.app/api/auth/google/callback',
     }),
   });
 
