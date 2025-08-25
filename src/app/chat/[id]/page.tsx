@@ -169,7 +169,7 @@ function page({ params }: { params: Promise<{ id: string }> }) {
   const currentUserId = parseInt(Cookies.get('id') as string) || 1;
   const currentUserName = Cookies.get('username') as string;
   
-  const { socket, isConnected } = useSocket("http://localhost:3000");
+  const { socket, isConnected } = useSocket("wss://multichat.up.railway.app");
 
   const MESSAGE_LIMIT = 50;
 
