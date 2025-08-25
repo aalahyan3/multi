@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon --watch server.js --exec node server.js",
     "build": "next build",
-    "start": "next start"
+    "start": "node server.js"
   },
   "dependencies": {
     "@prisma/client": "^6.14.0",
