@@ -1,6 +1,8 @@
 'use client'
+import Header from '@/components/Header';
 import { error } from 'console';
 import { div } from 'framer-motion/client';
+import { Search, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React , { useEffect, useState } from 'react'
 
@@ -105,7 +107,7 @@ async function handleSearch(
   setError: (msg: string | null) => void
 ) {
   const query = q.trim();
-  if (!query) return;
+  // if (!query) return;
 
   setLoading(true);
   setError(null);
@@ -147,28 +149,60 @@ interface Props {
   setError: (q: string | null) => void;
   setLoading: (q: boolean) => void;
 }
-function SearchForUsers({query, setQuery, setUsers, setError, setLoading}:Props)
-{
-  return(
-    <div className="p-4 mt-10 bg-purple-950 rounded-xl shadow-lg flex items-center gap-2 max-w-md mx-auto">
-      <input
-        type="text"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search users..."
-        className="flex-1 p-2 rounded-lg border border-purple-900 focus:outline-none focus:ring-2 focus:ring-violet-400 text-white bg-purple-800 opacity-80 placeholder-violet-300"
-      />
-      <button
-        onClick={() => handleSearch(query, setUsers, setLoading, setError)}
-        className="px-4  cursor-pointer py-2 bg-purple-700 hover:bg-violet-500 rounded-lg text-white font-semibold shadow-md transition-colors duration-200"
-      >
-        Search
-      </button>
-</div>
+function SearchForUsers({query, setQuery, setUsers, setError, setLoading}) {
+  const handleClear = () => {
+    setQuery('');
+    setUsers([]);
+  };
 
-  )
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    handleSearch(query.trim() || '', setUsers, setLoading, setError);
+  };
+
+  return (
+    <div className="w-full max-w-2xl mx-auto mt-8">
+      <form onSubmit={handleSubmit} className="relative">
+        <div className="relative overflow-hidden bg-gradient-to-r from-purple-900/20 to-violet-900/20 backdrop-blur-sm border border-purple-300/20 rounded-2xl shadow-xl">
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 to-violet-600/10"></div>
+          
+          <div className="relative flex items-center p-2">
+            <div className="flex items-center flex-1 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-inner">
+              <Search className="ml-4 text-purple-300" size={20} />
+              
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search for users..."
+                className="flex-1 px-4 py-3 bg-transparent text-white placeholder-purple-300/70 border-none outline-none focus:ring-0 text-lg"
+              />
+              
+              {query && (
+                <button
+                  type="button"
+                  onClick={handleClear}
+                  className="mr-2 p-1 text-purple-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+                >
+                  <X size={18} />
+                </button>
+              )}
+            </div>
+            
+            <button
+              type="submit"
+              className="ml-3 px-6 py-3 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-500 hover:to-violet-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-400/50"
+            >
+              Search
+            </button>
+          </div>
+        </div>
+        
+        <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-violet-600 rounded-2xl blur opacity-20 -z-10"></div>
+      </form>
+    </div>
+  );
 }
-
 function UserList() {
   const [users, setUsers] = useState<Partial<UserData>[] | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
@@ -202,6 +236,7 @@ function UserList() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 font-sans">
+      <Header />
       <div className="max-w-2xl mx-auto p-4 sm:p-6 flex flex-col min-h-screen">
         <header className="text-center mb-10">
           <div>

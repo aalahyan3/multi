@@ -3,6 +3,7 @@ import React, { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaEdit, FaTimes, FaSave, FaUser, FaPalette, FaClock, FaExclamationTriangle } from 'react-icons/fa';
 import { UserData } from '../../types/UserType';
+import Header from '../../../components/Header';
 
 // --- Helper Functions (No changes needed) ---
 
@@ -346,8 +347,12 @@ function Page({ params }: { params: Promise<{ username: string }> }) {
     };
 
     return (
+      <>
+     
+          <Header />
         <div className='min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 font-sans flex items-center justify-center p-4'>
             
+
             {isLoading && !userData ? (
                 <LoadingSkeleton />
             ) : userData ? (
@@ -390,6 +395,7 @@ function Page({ params }: { params: Promise<{ username: string }> }) {
                 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
             */}
         </div>
+        </>
     );
 }
 

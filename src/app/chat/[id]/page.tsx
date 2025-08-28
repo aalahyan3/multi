@@ -3,6 +3,7 @@ import Cookies from 'js-cookie';
 import { AlertCircle, ArrowLeft, MoreVertical, ChevronUp, ChevronDown } from 'lucide-react';
 import React, { use, useEffect, useState, useRef, useCallback } from 'react'
 import { useSocket } from '../../hooks/useSocket';
+import Link from 'next/link';
 
 interface User {
   id: number;
@@ -152,6 +153,7 @@ function page({ params }: { params: Promise<{ id: string }> }) {
   const [chatData, setChatData] = useState<ChatData | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMsg, setLoadingMsg] = useState("Loading Conversation...");
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [loadingNewer, setLoadingNewer] = useState(false);
   const [hasOlderMessages, setHasOlderMessages] = useState(false);
@@ -169,11 +171,10 @@ function page({ params }: { params: Promise<{ id: string }> }) {
   const currentUserId = parseInt(Cookies.get('id') as string) || 1;
   const currentUserName = Cookies.get('username') as string;
   
-  const { socket, isConnected } = useSocket("wss://multichat.up.railway.app");
+  const { socket, isConnected } = useSocket(process.env.SOCKET_SERVER_URL || "http://localhost:3000");
 
   const MESSAGE_LIMIT = 50;
 
-  // Memoized user lookup
   const userMap = React.useMemo(() => {
     const map = new Map<number, User>();
     chatData?.members.forEach(member => {
@@ -192,7 +193,6 @@ function page({ params }: { params: Promise<{ id: string }> }) {
     }
   }, []);
 
-  // Check if user has scrolled to see the oldest message
   const checkIfOldestVisible = useCallback(() => {
     const container = messagesContainerRef.current;
     if (!container || messages.length === 0) return;
@@ -203,7 +203,6 @@ function page({ params }: { params: Promise<{ id: string }> }) {
     const rect = firstMessage.getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
     
-    // If the first message is visible, show load older button
     const isOldestVisible = rect.top >= containerRect.top && rect.top <= containerRect.bottom;
     
     if (isOldestVisible && hasOlderMessages && !showLoadOlder) {
@@ -211,7 +210,6 @@ function page({ params }: { params: Promise<{ id: string }> }) {
     }
   }, [messages.length, hasOlderMessages, showLoadOlder]);
 
-  // Check if user has scrolled to see the newest message
   const checkIfNewestVisible = useCallback(() => {
     const container = messagesContainerRef.current;
     if (!container || messages.length === 0) return;
@@ -222,7 +220,6 @@ function page({ params }: { params: Promise<{ id: string }> }) {
     const rect = lastMessage.getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
     
-    // If the last message is visible, show load newer button
     const isNewestVisible = rect.bottom >= containerRect.top && rect.bottom <= containerRect.bottom;
     
     if (isNewestVisible && hasNewerMessages && !showLoadNewer) {
@@ -235,7 +232,6 @@ function page({ params }: { params: Promise<{ id: string }> }) {
     checkIfNewestVisible();
   }, [checkIfOldestVisible, checkIfNewestVisible]);
 
-  // Initial load - get latest 50 messages
   const fetchInitialMessages = useCallback(async () => {
     try {
       const response = await fetch(`/api/chat/${id}/get_messages?limit=${MESSAGE_LIMIT}`, { method: 'GET' });
@@ -272,7 +268,6 @@ function page({ params }: { params: Promise<{ id: string }> }) {
     }
   }, [id, scrollToBottom]);
 
-  // Load older messages (before the oldest current message)
   const loadOlderMessages = useCallback(async () => {
     if (loadingOlder || !hasOlderMessages || messages.length === 0) return;
     
@@ -298,13 +293,10 @@ function page({ params }: { params: Promise<{ id: string }> }) {
         setHasOlderMessages(false);
         setShowLoadOlder(false);
       } else {
-        // Prepend new messages and keep all
         const allMessages = [...newMessages, ...messages];
         setMessages(allMessages);
-        
-        // Update flags
         setHasOlderMessages(newMessages.length === MESSAGE_LIMIT);
-        setShowLoadOlder(false); // Hide button after loading
+        setShowLoadOlder(false);
       }
       
     } catch (error) {
@@ -314,8 +306,6 @@ function page({ params }: { params: Promise<{ id: string }> }) {
       setLoadingOlder(false);
     }
   }, [id, messages, loadingOlder, hasOlderMessages]);
-
-  // Load newer messages (after the newest current message)
   const loadNewerMessages = useCallback(async () => {
     if (loadingNewer || !hasNewerMessages || messages.length === 0) return;
     
@@ -341,15 +331,10 @@ function page({ params }: { params: Promise<{ id: string }> }) {
         setHasNewerMessages(false);
         setShowLoadNewer(false);
       } else {
-        // Append new messages and keep all
         const allMessages = [...messages, ...newMessages];
         setMessages(allMessages);
-        
-        // Update flags
         setHasNewerMessages(newMessages.length === MESSAGE_LIMIT);
-        setShowLoadNewer(false); // Hide button after loading
-        
-        // Scroll to bottom after loading newer messages
+        setShowLoadNewer(false); 
         setTimeout(() => {
           scrollToBottom();
         }, 100);
@@ -364,8 +349,8 @@ function page({ params }: { params: Promise<{ id: string }> }) {
   }, [id, messages, loadingNewer, hasNewerMessages, scrollToBottom]);
 
   useEffect(() => {
-    if (!socket || !isConnected) {
-      setError("Socket failed to connect");
+    if (!socket || !isConnected ) {
+      // setError("Socket failed to connect");
       return;
     }
 
@@ -394,11 +379,7 @@ function page({ params }: { params: Promise<{ id: string }> }) {
         createdAt: new Date(),
         id: crypto.randomUUID() as string
       };
-      
-      // Add new message to the end
       setMessages(prev => [...prev, msg]);
-      
-      // Auto scroll to bottom for new messages
       setTimeout(() => {
         scrollToBottom();
       }, 100);
@@ -518,7 +499,6 @@ function page({ params }: { params: Promise<{ id: string }> }) {
   return (
     <div className="bg-gray-900 min-h-screen">
       <div className='flex flex-col h-screen max-w-[1000px] mx-auto border shadow-2xl border-[#ffffff23]'>
-          {/* Header */}
           <div className="backdrop-blur-xl bg-black/40 border-b border-purple-500/30 shadow-2xl flex-shrink-0">
             <div className="p-4">
               <div className="flex items-center space-x-4">
@@ -528,7 +508,8 @@ function page({ params }: { params: Promise<{ id: string }> }) {
                 
                 <div className="flex -space-x-2">
                   {chatData?.members.map((member, index) => (
-                    <div
+                    <Link
+                    href={`/profile/${member.user.username}`}
                       key={member.id}
                       className="relative group"
                       style={{ zIndex: chatData.members.length - index }}
@@ -542,16 +523,16 @@ function page({ params }: { params: Promise<{ id: string }> }) {
                         className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-slate-800 shadow-lg"
                         style={{ backgroundColor: member.user.specific_color }}
                       ></div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
                 
                 <div className="flex-1 min-w-0">
                   <h1 className="text-xl font-bold bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent truncate">
-                    {chatData?.members.map(m => `${m.user.first_name} ${m.user.last_name}`).join(', ')}
+                    {chatData?.members.map(m => `${m.user.username}`).join(', ')}
                   </h1>
                   <p className="text-purple-400 text-sm font-medium">
-                    {chatData?.members.length} member{chatData?.members.length !== 1 ? 's' : ''}
+                    {chatData?.members.length} member{chatData?.members.length !== 1 ? 's ' : ' '}{isConnected ? '(socket sonnected)': '(socket sot sonnected'}
                   </p>
                 </div>
                 
@@ -561,8 +542,6 @@ function page({ params }: { params: Promise<{ id: string }> }) {
               </div>
             </div>
           </div>
-
-          {/* Messages Container */}
           <div 
             ref={messagesContainerRef}
             className="flex-1 overflow-y-auto p-4 space-y-3 relative"
@@ -573,7 +552,6 @@ function page({ params }: { params: Promise<{ id: string }> }) {
               minHeight: 0
             }}
           >
-            {/* Custom scrollbar styles */}
             <style jsx>{`
               div::-webkit-scrollbar {
                 width: 8px;
@@ -590,8 +568,6 @@ function page({ params }: { params: Promise<{ id: string }> }) {
                 background: #8b5cf6;
               }
             `}</style>
-
-            {/* Load Older Messages Button - Positioned at top when visible */}
             {showLoadOlder && (
               <div className="sticky top-0 z-10 pb-2">
                 <button
@@ -624,8 +600,6 @@ function page({ params }: { params: Promise<{ id: string }> }) {
                 return <OthersMessage key={message.id} message={message} user={user} />;
               }
             })}
-
-            {/* Load Newer Messages Button - Positioned at bottom when visible */}
             {showLoadNewer && (
               <div className="sticky bottom-0 z-10 pt-2">
                 <button
@@ -651,7 +625,6 @@ function page({ params }: { params: Promise<{ id: string }> }) {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input Area */}
           <div className="backdrop-blur-xl bg-black/40 border-t border-purple-500/30 p-4 flex-shrink-0">
             <div className="flex items-end space-x-4">
               <div className="flex-1 relative">
