@@ -11,7 +11,7 @@ let socket: Socket;
 export function useSocket(url:string)
 {
     const [isConnected, setIsConnected] = useState(false);
-
+    console.log("socket being connected to", url);
     useEffect(()=>
     {
         if (!socket)
