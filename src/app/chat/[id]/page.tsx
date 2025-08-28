@@ -170,8 +170,8 @@ function page({ params }: { params: Promise<{ id: string }> }) {
   
   const currentUserId = parseInt(Cookies.get('id') as string) || 1;
   const currentUserName = Cookies.get('username') as string;
-  
-  const { socket, isConnected } = useSocket(process.env.SOCKET_SERVER_URL || "http://localhost:3000");
+  //SOCKET_SERVER_URL
+  const { socket, isConnected } = useSocket(process.env.NEXT_PUBLIC_SOCKET_SERVER_URL || "http://localhost:3000");
 
   const MESSAGE_LIMIT = 50;
 
@@ -532,7 +532,7 @@ function page({ params }: { params: Promise<{ id: string }> }) {
                     {chatData?.members.map(m => `${m.user.username}`).join(', ')}
                   </h1>
                   <p className="text-purple-400 text-sm font-medium">
-                    {chatData?.members.length} member{chatData?.members.length !== 1 ? 's ' : ' '}{isConnected ? '(socket sonnected)': '(socket sot sonnected'}
+                    {chatData?.members.length} member{chatData?.members.length !== 1 ? 's ' : ' '}{isConnected ? '(socket sonnected)': '(socket not connected)'}
                   </p>
                 </div>
                 
