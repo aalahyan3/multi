@@ -65,5 +65,5 @@ npm run dev
 Open http://localhost:3000
 
 
-### see ho it looks
+### see how it looks like
 https://multichat.up.railway.app
