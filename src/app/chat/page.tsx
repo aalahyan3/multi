@@ -220,6 +220,8 @@ function UserList() {
           setError(res.message);
       else
       {
+        if (res?.data?.users.length === 0)
+            setError("No users for now")
         setUsers(res.data.users);
         setTotalPages(res.data.total_pages);
       }
