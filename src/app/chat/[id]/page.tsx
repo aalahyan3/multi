@@ -577,7 +577,7 @@ function page({ params }: { params: Promise<{ id: string }> }) {
                     {chatData?.members.map(m => `${m.user.username}`).join(', ')}
                   </h1>
                   <p className="text-purple-400 text-sm font-medium">
-                    {chatData?.members.length} member{chatData?.members.length !== 1 ? 's ' : ' '}{isConnected ? '(socket sonnected)': '(socket not connected)'}
+                    {chatData?.members.length} member{chatData?.members.length !== 1 ? 's ' : ' '}{isConnected ? '(socket connected)': '(socket not connected)'}
                   </p>
                 </div>
                 
