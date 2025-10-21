@@ -161,6 +161,7 @@ function page({ params }: { params: Promise<{ id: string }> }) {
   const [showLoadOlder, setShowLoadOlder] = useState(false);
   const [showLoadNewer, setShowLoadNewer] = useState(false);
   const [newMessage, setNewMessage] = useState('');
+  const [modal, setModal] = useState(true);
   const [error, setError] = useState('');
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -455,6 +456,20 @@ function page({ params }: { params: Promise<{ id: string }> }) {
     }
   };
 
+
+  useEffect(() => {
+    const hidden = document.cookie.includes("hideModal=true");
+    setModal(!hidden);
+  }, []);
+  
+
+  const handleModalClose = (forever : boolean) =>
+  {
+    
+    if (forever) document.cookie = "hideModal=true; max-age=" + 60 * 60 * 24 * 365 + "; path=/";
+    setModal(false);
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -497,7 +512,37 @@ function page({ params }: { params: Promise<{ id: string }> }) {
   }  
 
   return (
-    <div className="bg-gray-900 min-h-screen">
+    <div className="bg-gray-900 relative  min-h-screen">
+      {modal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div className="w-full max-w-xl rounded-2xl border border-purple-400 bg-gradient-to-br from-purple-900/90 to-purple-800/90 p-8 text-center shadow-2xl">
+      <h1 className="text-4xl md:text-5xl font-extrabold text-white uppercase tracking-wide">
+        Your Attention
+      </h1>
+
+      <p className="mt-6 text-lg md:text-2xl text-white/90 leading-relaxed">
+        The current version is deployed on <span className="text-purple-300 font-semibold">vercel.com</span>, which doesn’t support socket connections.  
+        Therefore, you won’t experience realtime chatting (you’ll need to refresh to see new messages).
+      </p>
+
+      <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+        <button
+          onClick={() => handleModalClose(false)}
+          className="w-full sm:w-auto px-6 py-3 rounded-lg bg-purple-500 hover:bg-purple-600 transition font-semibold text-white shadow"
+        >
+          Ok
+        </button>
+        <button
+          onClick={() => handleModalClose(true)}
+          className="w-full sm:w-auto px-6 py-3 rounded-lg bg-red-800 hover:bg-red-900 transition font-semibold text-white shadow"
+        >
+          Ok, don’t show this again
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
       <div className='flex flex-col h-screen max-w-[1000px] mx-auto border shadow-2xl border-[#ffffff23]'>
           <div className="backdrop-blur-xl bg-black/40 border-b border-purple-500/30 shadow-2xl flex-shrink-0">
             <div className="p-4">
