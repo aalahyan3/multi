@@ -90,7 +90,7 @@ const UserProfile = ({ userData, onEditClick, selfProfile }) => {
             
             <p className="text-purple-300 mb-4">@{userData.username}</p>
             
-            <p className="text-slate-400 text-sm">{userData.email}</p>
+              {selfProfile && <p className="text-slate-400 text-sm">{userData.email}</p>}
           </div>
 
           <hr className="border-t border-white/10 my-8" />
